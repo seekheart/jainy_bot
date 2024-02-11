@@ -1,0 +1,68 @@
+import discord
+from loguru import logger
+from config import BOT_PREFIX, BOT_INTENTS
+
+
+class JainyBot(discord.Client):
+    def __init__(self, *args, **kwargs):
+        super().__init__(command_prefix=BOT_PREFIX, intents=BOT_INTENTS, **kwargs)
+        self.role_message_id = 1206333731607150672
+        self.emoji_to_role = {
+            discord.PartialEmoji(name='🍖'): 1197959991315927101,
+            discord.PartialEmoji(name='🪦'): 800444883897942086,
+            discord.PartialEmoji.from_str('<:pokeball:1199003145657909362>'): 1197962478726959266,
+            discord.PartialEmoji.from_str('<:SeekMountUp:913166118452080692>'): 1197955990553903255,
+            discord.PartialEmoji.from_str('<:jainaborb:536631923380977694>'): 1206258593893195797
+        }
+        self.guild = None
+
+    async def on_ready(self):
+        logger.info(f'Logged in as {self.user}')
+
+    def _get_role_by_id(self, role_id: int) -> str:
+        return self.guild.get_role(role_id)
+
+    def _is_bad_message(self, payload: discord.RawReactionActionEvent):
+        self.guild = self.get_guild(payload.guild_id)
+        try:
+            role_id = self.emoji_to_role[payload.emoji]
+        except KeyError:
+            logger.error(f'Invalid Emoji: {payload.emoji}')
+            return True
+
+        member = self.guild.get_member(payload.user_id)
+
+        is_missing = payload.message_id != self.role_message_id or self.guild is None or self._get_role_by_id(
+            role_id) is None or member is None
+
+        if is_missing:
+            return True
+        return False
+
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        if self._is_bad_message(payload):
+            return
+        guild = self.get_guild(payload.guild_id)
+        role = guild.get_role(self.emoji_to_role[payload.emoji])
+
+        try:
+            await payload.member.add_roles(role)
+        except discord.HTTPException:
+            logger.error(f'Discord server issue occurred could not connect do discord server: {payload.guild_id}')
+
+        logger.info(
+            f'Assigned role = {self._get_role_by_id(self.emoji_to_role[payload.emoji])} to user = {payload.member.name}')
+
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        if self._is_bad_message(payload):
+            return
+
+        role_id = self.emoji_to_role[payload.emoji]
+        member = self.guild.get_member(payload.user_id)
+
+        try:
+            await member.remove_roles(self._get_role_by_id(role_id))
+        except discord.HTTPException:
+            pass
+
+        logger.info(f'Removed role = {self._get_role_by_id(role_id)} from user = {member.name}')
