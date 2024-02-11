@@ -1,5 +1,4 @@
 import os
-
 import discord
 
 role_message_id = int(os.environ.get("ROLE_MESSAGE_ID"))
