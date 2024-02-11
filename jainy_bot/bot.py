@@ -1,19 +1,14 @@
 import discord
 from loguru import logger
 from config import BOT_PREFIX, BOT_INTENTS
+from .react_roles import emoji_to_role
 
 
 class JainyBot(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(command_prefix=BOT_PREFIX, intents=BOT_INTENTS, **kwargs)
         self.role_message_id = 1206333731607150672
-        self.emoji_to_role = {
-            discord.PartialEmoji(name='🍖'): 1197959991315927101,
-            discord.PartialEmoji(name='🪦'): 800444883897942086,
-            discord.PartialEmoji.from_str('<:pokeball:1199003145657909362>'): 1197962478726959266,
-            discord.PartialEmoji.from_str('<:SeekMountUp:913166118452080692>'): 1197955990553903255,
-            discord.PartialEmoji.from_str('<:jainaborb:536631923380977694>'): 1206258593893195797
-        }
+        self.emoji_to_role = emoji_to_role
         self.guild = None
 
     async def on_ready(self):
