@@ -7,7 +7,6 @@ if not DISCORD_BOT_TOKEN:
     raise AttributeError(f'DISCORD_BOT_TOKEN has not been set!')
 
 BOT_PREFIX = os.environ.get('BOT_PREFIX', '$')
-BOT_GUILD_ID = int(os.environ.get('BOT_GUILD_ID', 0))
 
 BOT_INTENTS = discord.Intents.default()
 BOT_INTENTS.members = True
