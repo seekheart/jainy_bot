@@ -1,15 +1,20 @@
 import discord
+from discord.ext import commands
 from loguru import logger
-from config import BOT_PREFIX, BOT_INTENTS
+from config import BOT_PREFIX, BOT_INTENTS, BOT_ROLE_MESSAGE_ID
 from .react_roles import emoji_to_role
+from jainy_bot.commands import Borb
 
 
-class JainyBot(discord.Client):
+class JainyBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(command_prefix=BOT_PREFIX, intents=BOT_INTENTS, **kwargs)
-        self.role_message_id = 1206333731607150672
+        self.role_message_id = BOT_ROLE_MESSAGE_ID
         self.emoji_to_role = emoji_to_role
         self.guild = None
+
+    async def setup_hook(self):
+        await self.add_cog(Borb(self))
 
     async def on_ready(self):
         logger.info(f'Logged in as {self.user}')
