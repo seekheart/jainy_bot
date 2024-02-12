@@ -14,6 +14,7 @@ class JainyBot(commands.Bot):
         self.guild = None
 
     async def setup_hook(self):
+        logger.info(f'{Borb.__name__}')
         await self.add_cog(Borb(self))
 
     async def on_ready(self):
