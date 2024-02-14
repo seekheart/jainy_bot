@@ -1,6 +1,7 @@
 version: '3'
 services:
   jainy_bot:
-    build: .
+    image: seekheart/jainy_bot:0.0.1
+    container_name: jainy_bot
     env_file:
       - .env
