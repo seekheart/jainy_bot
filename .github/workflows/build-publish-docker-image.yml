@@ -1,12 +1,14 @@
-name: build-docker-image-pull-requests
+name: build-publish-docker-image
 on:
-  pull_request:
+  push:
     branches:
       - develop
       - master
 jobs:
-  build-docker-image:
+  publish-docker-image:
     runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v3
       - id: commit
@@ -21,5 +23,5 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: false
-          tags: ${{ steps.commit.outputs.short }}
+          push: true
+          tags: $TAG
