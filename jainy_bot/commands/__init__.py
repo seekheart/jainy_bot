@@ -1,7 +1,7 @@
 from .borb import *
 from .uptime import *
+from .moderation import *
 
+cogs = [Borb, Uptime, Moderation]
 
-cogs = [Borb, Uptime]
-
-__all__ = [Borb, Uptime, cogs]
+__all__ = [Borb, Uptime, Moderation, cogs]
