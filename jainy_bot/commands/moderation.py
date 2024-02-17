@@ -4,58 +4,39 @@ import discord
 from loguru import logger
 from config import moderator_roles, BOT_MOD_AUDIT_CHANNEL_ID
 from jainy_bot.exceptions import UnauthorizedUserException
-
-
-def make_general_card(title: str, author: discord.User, thumbnail_url: str | None = None) -> discord.Embed:
-    base = discord.Embed(
-        title=title,
-        timestamp=datetime.now(timezone.utc)
-    ).set_author(
-        name=author.display_name,
-        icon_url=author.avatar.url
-    )
-
-    if thumbnail_url:
-        base.set_thumbnail(url=thumbnail_url)
-
-    return base
-
-
-def make_offender_card(title: str, offender: discord.User, moderator: discord.User, details: str) -> discord.Embed:
-    return make_general_card(
-        title=title,
-        author=moderator,
-        thumbnail_url=offender.avatar.url
-    ).add_field(
-        name=f'User Name',
-        value=f'{offender.name}'
-    ).add_field(
-        name=f'User ID',
-        value=f'{offender.id}'
-    ).add_field(
-        name=f'Details',
-        value=f'{details}',
-        inline=False
-    )
-
-
-async def send_audit_message(guild: discord.Guild, embed: discord.Embed):
-    logger.info(f'Sending audit message to guild {guild} channel = {guild.get_channel(BOT_MOD_AUDIT_CHANNEL_ID)}')
-    await guild.get_channel(BOT_MOD_AUDIT_CHANNEL_ID).send(embed=embed)
+from .util import make_general_card, make_offender_card, send_audit_message, send_reply_message
 
 
 class Moderation(commands.Cog, name="Moderation"):
+    """
+    Moderation Cog representing all things moderator
+    """
+
     def __init__(self, bot: commands.bot):
+        """
+        constructor for the cog to load into the bot when bot calls load_cog
+        :param bot: discord bot of interest
+        """
         self.bot = bot
         self.allowed_roles = moderator_roles
 
-    def _is_allowed(self, user_roles: list[discord.Role]):
+    def _is_allowed(self, user_roles: list[discord.Role]) -> bool:
+        """
+        Checks if user is allowed to use this command based on roles
+        :param user_roles: list of roles from the user calling the command
+        :return: boolean indicating whether user is allowed to use this command
+        """
         for role in user_roles:
             if role.name in self.allowed_roles:
                 return True
         return False
 
     async def _check_if_allowed(self, ctx: commands.Context):
+        """
+        Checks if the caller of the command is allowed to execute command
+        :param ctx: discord context of the call
+        :return: bool if allowed else raises UnauthorizedUserException
+        """
         is_allowed = self._is_allowed(ctx.author.roles)
 
         if not is_allowed:
@@ -66,8 +47,14 @@ class Moderation(commands.Cog, name="Moderation"):
         return True
 
     @commands.command()
-    async def kick(self, ctx: commands.Context, user: discord.User, reason: str):
-        """Kicks a user from the server"""
+    async def kick(self, ctx: commands.Context, user: discord.User, reason: str) -> None:
+        """
+        Kicks a user from the server
+        :param ctx: discord context of the call
+        :param user: user to kick
+        :param reason: reason for kicking the user to be logged in audit channel
+        :return None
+        """
         await self._check_if_allowed(ctx)
 
         embed = make_offender_card(
@@ -82,12 +69,18 @@ class Moderation(commands.Cog, name="Moderation"):
         except discord.HTTPException as err:
             logger.error(err.text)
             return await ctx.send(f'could not kick user {user.display_name}')
-
+        await send_reply_message(ctx, f'kicked user {user.display_name}')
         await send_audit_message(guild=ctx.guild, embed=embed)
 
     @commands.command()
     async def ban(self, ctx: commands.Context, user: discord.User, reason: str):
-        """Bans a user"""
+        """
+        Bans a user from server
+        :param ctx: discord calling context
+        :param user to kick
+        :param reason: reason for banning the user to be logged in audit channel
+        :return:
+        """
         await self._check_if_allowed(ctx)
 
         embed = make_offender_card(
@@ -103,11 +96,18 @@ class Moderation(commands.Cog, name="Moderation"):
             logger.error(e.text)
             return await ctx.send(f'Could not ban user {user.display_name}')
 
+        await send_reply_message(ctx, f'banned user {user.display_name}')
         await send_audit_message(guild=ctx.guild, embed=embed)
 
     @commands.command()
     async def unban(self, ctx: commands.Context, user: discord.User, reason: str):
-        """Unbans a user from the server"""
+        """
+        Unbans a user from the server
+        :param ctx: discord calling context
+        :param user: user to unban
+        :param reason: reason for unbanning user to be logged in audit channel
+        :return:
+        """
         await self._check_if_allowed(ctx)
 
         embed = make_offender_card(
@@ -123,11 +123,16 @@ class Moderation(commands.Cog, name="Moderation"):
             logger.error(e.text)
             return ctx.send(f'Unable to unban user {user.display_name}')
 
+        await send_reply_message(ctx, f'unbanned user {user.display_name}')
         await send_audit_message(guild=ctx.guild, embed=embed)
 
     @commands.command()
-    async def invite(self, ctx: commands.Context):
-        """Creates a one time use invite link"""
+    async def invite(self, ctx: commands.Context) -> None:
+        """
+        Creates invite one time use invite link set to expire in 30 mins
+        :param ctx: discord calling context
+        :return: None
+        """
         await self._check_if_allowed(ctx)
 
         embed = make_general_card(
@@ -157,12 +162,18 @@ class Moderation(commands.Cog, name="Moderation"):
             logger.error(e.text)
             return ctx.send(f'Unable to create invite link')
 
-        await ctx.send(invite.url)
+        await send_reply_message(ctx, f'Invite link created: {invite.url}')
         await send_audit_message(guild=ctx.guild, embed=embed)
 
     @commands.command()
-    async def clean(self, ctx: commands.Context, user: discord.Member, num_msg: int):
-        """Deletes last N messages by user"""
+    async def clean(self, ctx: commands.Context, user: discord.Member, num_msg: int) -> None:
+        """
+        Cleans up last N messages from user declared in command
+        :param ctx: discord calling context
+        :param user: user to clean messages from
+        :param num_msg: number of messages to delete
+        :return: None
+        """
         await self._check_if_allowed(ctx)
         logger.info(f'Cleaning {num_msg} messages by user = {user.display_name}')
 
@@ -174,4 +185,4 @@ class Moderation(commands.Cog, name="Moderation"):
                 deleted.append(msg)
                 await msg.delete()
 
-        await ctx.send(f'Deleted last {len(deleted)} messages by user = {user.display_name}')
+        await send_reply_message(ctx, f'Deleted last {len(deleted)} messages by user = {user.display_name}')
