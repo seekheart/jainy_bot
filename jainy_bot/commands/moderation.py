@@ -162,8 +162,16 @@ class Moderation(commands.Cog, name="Moderation"):
 
     @commands.command()
     async def clean(self, ctx: commands.Context, user: discord.Member, num_msg: int):
-        """Deletes last N messages by user takes arguments"""
+        """Deletes last N messages by user"""
         await self._check_if_allowed(ctx)
         logger.info(f'Cleaning {num_msg} messages by user = {user.display_name}')
-        await ctx.channel.purge(limit=num_msg, check=lambda x: x.author == user)
-        await ctx.send(f'Deleted last {num_msg} messages by user = {user.display_name}')
+
+        deleted = []
+        async for msg in ctx.channel.history(limit=1000):
+            if len(deleted) == num_msg:
+                break
+            if msg.author == user:
+                deleted.append(msg)
+                await msg.delete()
+
+        await ctx.send(f'Deleted last {len(deleted)} messages by user = {user.display_name}')
