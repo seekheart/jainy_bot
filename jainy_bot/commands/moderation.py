@@ -3,17 +3,29 @@ from datetime import datetime, timezone
 import discord
 from loguru import logger
 from config import moderator_roles, BOT_MOD_AUDIT_CHANNEL_ID
+from jainy_bot.exceptions import UnauthorizedUserException
 
 
-def make_moderation_card(title: str, offender: discord.User, moderator: discord.User, details: str) -> discord.Embed:
-    return discord.Embed(
-        timestamp=datetime.now(timezone.utc),
-        title=f'{title}',
-    ).set_thumbnail(
-        url=offender.avatar.url
+def make_general_card(title: str, author: discord.User, thumbnail_url: str | None = None) -> discord.Embed:
+    base = discord.Embed(
+        title=title,
+        timestamp=datetime.now(timezone.utc)
     ).set_author(
-        name=moderator.display_name,
-        icon_url=moderator.avatar.url
+        name=author.display_name,
+        icon_url=author.avatar.url
+    )
+
+    if thumbnail_url:
+        base.set_thumbnail(url=thumbnail_url)
+
+    return base
+
+
+def make_offender_card(title: str, offender: discord.User, moderator: discord.User, details: str) -> discord.Embed:
+    return make_general_card(
+        title=title,
+        author=moderator,
+        thumbnail_url=offender.avatar.url
     ).add_field(
         name=f'User Name',
         value=f'{offender.name}'
@@ -27,6 +39,11 @@ def make_moderation_card(title: str, offender: discord.User, moderator: discord.
     )
 
 
+async def send_audit_message(guild: discord.Guild, embed: discord.Embed):
+    logger.info(f'Sending audit message to guild {guild} channel = {guild.get_channel(BOT_MOD_AUDIT_CHANNEL_ID)}')
+    await guild.get_channel(BOT_MOD_AUDIT_CHANNEL_ID).send(embed=embed)
+
+
 class Moderation(commands.Cog, name="Moderation"):
     def __init__(self, bot: commands.bot):
         self.bot = bot
@@ -38,23 +55,115 @@ class Moderation(commands.Cog, name="Moderation"):
                 return True
         return False
 
-    @commands.command()
-    async def kick(self, ctx: commands.Context, user: discord.User, reason: str):
-        """Kicks a user from the server and records the reason why in audit channel"""
-        roles = ctx.author.roles
-        is_allowed = self._is_allowed(roles)
+    async def _check_if_allowed(self, ctx: commands.Context):
+        is_allowed = self._is_allowed(ctx.author.roles)
 
         if not is_allowed:
-            return await ctx.send(f'{ctx.author.mention} you are not authorized to use mod commands!')
+            await ctx.send(f'{ctx.author.mention} you are not authorized to use mod commands!')
+            logger.error(f'{ctx.author} tried to use mod commands')
 
-        embed = make_moderation_card(
+            raise UnauthorizedUserException(f'{ctx.author} unauthorized to use mod commands!')
+        return True
+
+    @commands.command()
+    async def kick(self, ctx: commands.Context, user: discord.User, reason: str):
+        """Kicks a user from the server"""
+        await self._check_if_allowed(ctx)
+
+        embed = make_offender_card(
             title=f'Kicked user from {ctx.guild.name}',
             offender=user,
             moderator=ctx.author,
             details=reason
         )
-        await ctx.guild.get_channel(BOT_MOD_AUDIT_CHANNEL_ID).send(embed=embed)
+
         try:
             await ctx.guild.kick(user=user, reason=reason)
         except discord.HTTPException as err:
             logger.error(err.text)
+            return await ctx.send(f'could not kick user {user.display_name}')
+
+        await send_audit_message(guild=ctx.guild, embed=embed)
+
+    @commands.command()
+    async def ban(self, ctx: commands.Context, user: discord.User, reason: str):
+        """Bans a user"""
+        await self._check_if_allowed(ctx)
+
+        embed = make_offender_card(
+            title=f'Banned user from {ctx.guild.name}',
+            offender=user,
+            moderator=ctx.author,
+            details=reason
+        )
+
+        try:
+            await ctx.guild.ban(user)
+        except discord.HTTPException or discord.Forbidden or discord.NotFound as e:
+            logger.error(e.text)
+            return await ctx.send(f'Could not ban user {user.display_name}')
+
+        await send_audit_message(guild=ctx.guild, embed=embed)
+
+    @commands.command()
+    async def unban(self, ctx: commands.Context, user: discord.User, reason: str):
+        """Unbans a user from the server"""
+        await self._check_if_allowed(ctx)
+
+        embed = make_offender_card(
+            title=f'Unbanned user from {ctx.guild.name}',
+            offender=user,
+            moderator=ctx.author,
+            details=reason
+        )
+
+        try:
+            await ctx.guild.unban(user)
+        except discord.HTTPException or discord.Forbidden or discord.NotFound as e:
+            logger.error(e.text)
+            return ctx.send(f'Unable to unban user {user.display_name}')
+
+        await send_audit_message(guild=ctx.guild, embed=embed)
+
+    @commands.command()
+    async def invite(self, ctx: commands.Context):
+        """Creates a one time use invite link"""
+        await self._check_if_allowed(ctx)
+
+        embed = make_general_card(
+            title=f'{ctx.author.display_name} created invite link',
+            author=ctx.author,
+            thumbnail_url=ctx.author.avatar.url
+        )
+
+        try:
+            invite = await ctx.channel.create_invite(
+                max_age=1800,
+                max_uses=1,
+                unique=True,
+            )
+            embed.add_field(
+                name=f'Invite Link',
+                value=invite.url,
+                inline=False
+            ).add_field(
+                name=f'Invite created timestamp',
+                value=invite.created_at
+            ).add_field(
+                name=f'Invite expire timestamp',
+                value=invite.expires_at
+            )
+        except discord.HTTPException or discord.Forbidden as e:
+            logger.error(e.text)
+            return ctx.send(f'Unable to create invite link')
+
+        await ctx.send(invite.url)
+        await send_audit_message(guild=ctx.guild, embed=embed)
+
+    @commands.command()
+    async def clean(self, ctx: commands.Context, user: discord.Member, num_msg: int):
+        """Deletes last N messages by user takes arguments"""
+        await self._check_if_allowed(ctx)
+        logger.info(f'Cleaning {num_msg} messages by user = {user.display_name}')
+        await ctx.channel.purge(limit=num_msg, check=lambda x: x.author == user)
+        await ctx.send(f'Deleted last {num_msg} messages by user = {user.display_name}')
