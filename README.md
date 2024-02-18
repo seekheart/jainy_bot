@@ -25,5 +25,6 @@ DISCORD_BOT_TOKEN=<YOUR TOKEN FROM BEFORE HERE>
 MOD_AUDIT_CHANNEL_ID=<Moderation Audit Channel ID here>
 ROLE_MESSAGE_ID=<Message to react to for role assignment here>
 MODERATOR_ROLES=<roles here separated by `,` for example `a,b,c`>
+LOGURU_LEVEL=<LOG LEVEL>
 ```
 2. Source the env file you created and run the `app.py`

@@ -179,6 +179,9 @@ class Moderation(commands.Cog, name="Moderation"):
 
         deleted = []
         async for msg in ctx.channel.history(limit=1000):
+            if msg.id == ctx.message.id:
+                logger.debug(f'Skipping initial bot command message: {msg.content}')
+                continue
             if len(deleted) == num_msg:
                 break
             if msg.author == user:
