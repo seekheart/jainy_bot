@@ -74,5 +74,11 @@ async def send_reply_message(ctx: commands.Context, message: str) -> None:
     """
     logger.info(f'Sending reply message to {ctx.author.display_name} in channel {ctx.channel.name}')
     await ctx.send(message)
-    await ctx.message.delete()
-
+    try:
+        await ctx.message.delete()
+    except discord.ext.commands.errors.CommandInvokeError as e:
+        logger.warning(f'Original bot command invoked could be deleted')
+        logger.error(e)
+    except discord.ext.commands.UserNotFound or discord.NotFound as e:
+        logger.error(f'User = {ctx.author.display_name} who invoked command is no longer found')
+        logger.error(e)
