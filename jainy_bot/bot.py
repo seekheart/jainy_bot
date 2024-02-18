@@ -1,5 +1,4 @@
 import discord
-from discord import Message
 from discord.ext import commands
 from loguru import logger
 from config import BOT_PREFIX, BOT_INTENTS, BOT_ROLE_MESSAGE_ID
