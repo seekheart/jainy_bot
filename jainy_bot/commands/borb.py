@@ -6,7 +6,7 @@ class Borb(commands.Cog, name='Borb'):
         self.bot = bot
 
     @commands.command()
-    async def borb(self, ctx, name):
+    async def borb(self, ctx: commands, name):
         """Borb a person"""
         await ctx.send(f'Borbing {name}')
 

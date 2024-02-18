@@ -3,7 +3,7 @@ from discord.ext import commands
 from loguru import logger
 from config import BOT_PREFIX, BOT_INTENTS, BOT_ROLE_MESSAGE_ID
 from .react_roles import emoji_to_role
-from jainy_bot.commands import Borb
+from jainy_bot.commands import cogs
 
 
 class JainyBot(commands.Bot):
@@ -14,8 +14,9 @@ class JainyBot(commands.Bot):
         self.guild = None
 
     async def setup_hook(self):
-        logger.info(f'{Borb.__name__}')
-        await self.add_cog(Borb(self))
+        for c in cogs:
+            logger.info(f"Setting up cog: {c.__name__}")
+            await self.add_cog(c(self))
 
     async def on_ready(self):
         logger.info(f'Logged in as {self.user}')
