@@ -1,6 +1,6 @@
 from discord.ext import commands
 from loguru import logger
-from config import moderator_roles
+from config import MODERATOR_ROLES
 from jainy_bot.exceptions import UnauthorizedUserException
 from .util import make_general_card, make_offender_card, send_audit_message, send_reply_message
 import discord
@@ -17,7 +17,7 @@ class Moderation(commands.Cog, name="Moderation"):
         :param bot: discord bot of interest
         """
         self.bot = bot
-        self.allowed_roles = moderator_roles
+        self.allowed_roles = MODERATOR_ROLES
 
     def _is_allowed(self, user_roles: list[discord.Role]) -> bool:
         """

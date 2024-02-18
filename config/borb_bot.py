@@ -20,7 +20,7 @@ if not BOT_ROLE_MESSAGE_ID:
 if not BOT_MOD_AUDIT_CHANNEL_ID:
     raise AttributeError(f'BOT_MOD_AUDIT_CHANNEL_ID cannot be null')
 
-moderator_roles = os.environ.get('MODERATOR_ROLES').split(',')
+MODERATOR_ROLES = os.environ.get('MODERATOR_ROLES').split(',')
 
-if not moderator_roles:
+if not MODERATOR_ROLES:
     raise AttributeError(f'MODERATOR_ROLES is not set!')
