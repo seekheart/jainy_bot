@@ -1,10 +1,4 @@
-import os
 import discord
-
-role_message_id = int(os.environ.get("ROLE_MESSAGE_ID"))
-if not role_message_id:
-    raise AttributeError("ROLE_MESSAGE_ID not set!")
-
 
 emoji_to_role = {
     discord.PartialEmoji(name='🍖'): 1197959991315927101,
