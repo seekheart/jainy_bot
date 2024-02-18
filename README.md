@@ -22,6 +22,8 @@ or you will have to reset token again)
 1. Create a `.env` file in this directory and set the following variables
 ```bash
 DISCORD_BOT_TOKEN=<YOUR TOKEN FROM BEFORE HERE>
-LOG_LEVEL=DEBUG
+MOD_AUDIT_CHANNEL_ID=<Moderation Audit Channel ID here>
+ROLE_MESSAGE_ID=<Message to react to for role assignment here>
+MODERATOR_ROLES=<roles here separated by `,` for example `a,b,c`>
 ```
 2. Source the env file you created and run the `app.py`
