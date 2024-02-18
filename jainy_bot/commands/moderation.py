@@ -1,10 +1,9 @@
 from discord.ext import commands
-from datetime import datetime, timezone
-import discord
 from loguru import logger
-from config import moderator_roles, BOT_MOD_AUDIT_CHANNEL_ID
+from config import moderator_roles
 from jainy_bot.exceptions import UnauthorizedUserException
 from .util import make_general_card, make_offender_card, send_audit_message, send_reply_message
+import discord
 
 
 class Moderation(commands.Cog, name="Moderation"):
@@ -68,7 +67,8 @@ class Moderation(commands.Cog, name="Moderation"):
             await ctx.guild.kick(user=user, reason=reason)
         except discord.HTTPException as err:
             logger.error(err.text)
-            return await ctx.send(f'could not kick user {user.display_name}')
+            await ctx.send(f'could not kick user {user.display_name}')
+            return
         await send_reply_message(ctx, f'kicked user {user.display_name}')
         await send_audit_message(guild=ctx.guild, embed=embed)
 
