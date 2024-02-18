@@ -65,7 +65,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
         try:
             await ctx.guild.kick(user=user, reason=reason)
-        except discord.HTTPException as err:
+        except discord.HTTPException or commands.UserNotFound as err:
             logger.error(err.text)
             await ctx.send(f'could not kick user {user.display_name}')
             return
@@ -92,7 +92,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
         try:
             await ctx.guild.ban(user)
-        except discord.HTTPException or discord.Forbidden or discord.NotFound as e:
+        except discord.HTTPException or discord.Forbidden as e:
             logger.error(e.text)
             return await ctx.send(f'Could not ban user {user.display_name}')
 
