@@ -22,6 +22,7 @@ class Dalle(commands.Cog, name="Dalle"):
             'prompt': prompt
         }
 
+        await ctx.send(f'{ctx.author.mention} hang tight I\'m checking with Dall-E')
         response = requests.post(DALLE_API_URL, json=payload)
 
         if response.status_code == 200:
