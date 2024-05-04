@@ -1,5 +1,15 @@
 # Jainy Bot Changelog
 
+## Version v1.1.0
+
+**Features**
+
+- Added dalle command to generate images via ai
+
+**Dev Deps**
+
+- added requests for api calls
+
 ## Version v1.0.0
 **Features**
 - Moderation commands like kick, ban, unban, etc with audit log posted in a channel (configurable)
