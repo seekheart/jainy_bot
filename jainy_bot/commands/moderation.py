@@ -1,9 +1,10 @@
+import discord
 from discord.ext import commands
 from loguru import logger
+
 from config import MODERATOR_ROLES
 from jainy_bot.exceptions import UnauthorizedUserException
 from .util import make_general_card, make_offender_card, send_audit_message, send_reply_message
-import discord
 
 
 class Moderation(commands.Cog, name="Moderation"):
@@ -160,7 +161,8 @@ class Moderation(commands.Cog, name="Moderation"):
             )
         except discord.HTTPException or discord.Forbidden as e:
             logger.error(e.text)
-            return ctx.send(f'Unable to create invite link')
+            await ctx.send(f'Unable to create invite link')
+            return
 
         await send_reply_message(ctx, f'Invite link created: {invite.url}')
         await send_audit_message(guild=ctx.guild, embed=embed)
@@ -188,4 +190,11 @@ class Moderation(commands.Cog, name="Moderation"):
                 deleted.append(msg)
                 await msg.delete()
 
+        embed = make_general_card(
+            title=f'{ctx.author.display_name} cleaned up last {num_msg} messages by user = {user.display_name}',
+            author=ctx.author,
+            thumbnail_url=ctx.author.avatar.url
+        )
+
         await send_reply_message(ctx, f'Deleted last {len(deleted)} messages by user = {user.display_name}')
+        await send_audit_message(guild=ctx.guild, embed=embed)
