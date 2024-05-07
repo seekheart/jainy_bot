@@ -1,13 +1,20 @@
 # Jainy Bot Changelog
 
-## Version v1.1.0
+## Version v1.1.1
 
-**Features**
+**Fixes**
 
-- Added dalle command to generate images via ai
+- Fixed synchronous code blocking discord health check
 
 **Dev Deps**
 
+- removed requests lib for aiohttp to handle async requests
+
+## Version v1.1.0
+**Features**
+- Added dalle command to generate images via ai
+
+**Dev Deps**
 - added requests for api calls
 
 ## Version v1.0.0
