@@ -1,12 +1,24 @@
 import base64
 from io import BytesIO
 
+import aiohttp
 import discord
-import requests
 from discord.ext import commands
 from loguru import logger
 
 from config import DALLE_API_URL
+
+
+async def make_api_request(payload: dict) -> dict or None:
+    async with aiohttp.ClientSession() as session:
+        async with session.post(DALLE_API_URL, json=payload) as response:
+            if response.status == 200:
+                logger.info(f'Successfully contacted Dalle Api')
+                payload = await response.json()
+                return payload
+            else:
+                logger.error(f'Dalle Server responded with status = {response.status}')
+                return None
 
 
 class Dalle(commands.Cog, name="Dalle"):
@@ -23,12 +35,12 @@ class Dalle(commands.Cog, name="Dalle"):
         }
 
         await ctx.send(f'{ctx.author.mention} hang tight I\'m checking with Dall-E')
-        response = requests.post(DALLE_API_URL, json=payload)
+        response = await make_api_request(payload)
 
-        if response.status_code == 200:
+        if response:
             logger.info(f"Dalle image created successfully")
             await ctx.send(f'{ctx.author.mention} generating image please wait')
-            data = response.json()
+            data = response
             images = data['images']
             files = []
 
@@ -43,6 +55,4 @@ class Dalle(commands.Cog, name="Dalle"):
                 embed=discord.Embed(title=f'{prompt} requested by {ctx.author}')
             )
         else:
-            logger.error(
-                f'Error creating a Dalle image with prompt: {prompt} server responded with status = {response.status_code}')
             await ctx.send('Could not generate images')
