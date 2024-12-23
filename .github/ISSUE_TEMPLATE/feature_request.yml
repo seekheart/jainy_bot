@@ -8,6 +8,6 @@ body:
   - type: textarea
     attributes:
       label: What feature are you requesting
-      description: what problem are you hoping to solve and how should the feature be used?
+      description: What problem are you hoping to solve and how should the feature be used?
     validations:
       required: true
