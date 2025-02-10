@@ -1,26 +1,26 @@
 {
-  "🍖": {
-    "role_id": 1197959991315927101,
-    "role_name": "Monster Hunter"
-  },
-  "🪦": {
-    "role_id": 800444883897942086,
-    "role_name": "Dead By Daylight"
-  },
-  "<:pokeball:1199003145657909362>": {
-    "role_id": 1197962478726959266,
-    "role_name": "Pokemon"
-  },
-  "<:SeekMountUp:913166118452080692>": {
-    "role_id": 1197955990553903255,
-    "role_name": "FFXIV"
-  },
-  "<:jainaborb:536631923380977694>": {
-    "role_id": 1206258593893195797,
-    "role_name": "General Member Role"
-  },
-  "<a:birbpop:1109545429495992330>": {
-    "role_id": 1337929226887626825,
-    "role_name": "Test"
-  }
+    "\ud83c\udf56": {
+        "role_id": 1197959991315927101,
+        "role_name": "Monster Hunter"
+    },
+    "\ud83e\udea6": {
+        "role_id": 800444883897942086,
+        "role_name": "Dead By Daylight"
+    },
+    "<:pokeball:1199003145657909362>": {
+        "role_id": 1197962478726959266,
+        "role_name": "Pokemon"
+    },
+    "<:SeekMountUp:913166118452080692>": {
+        "role_id": 1197955990553903255,
+        "role_name": "FFXIV"
+    },
+    "<:jainaborb:536631923380977694>": {
+        "role_id": 1206258593893195797,
+        "role_name": "General Member Role"
+    },
+    "<a:birbpop:1109545429495992330>": {
+        "role_id": 1337929226887626825,
+        "role_name": "test Role"
+    }
 }
