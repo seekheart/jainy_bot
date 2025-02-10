@@ -13,6 +13,22 @@ class JainyBot(commands.Bot):
         self.emoji_roles_lookup = load_roles()
         self.guild = None
 
+    def _get_role_id_by_emoji(self, emoji: discord.PartialEmoji) -> int:
+        emoji_name = emoji.name
+        emoji_id = emoji.id
+
+        emoji_custom_name = f'<:{emoji_name}:{emoji_id}>'
+        animated_custom_emoji_name = f'<a:{emoji_name}:{emoji_id}>'
+
+        if emoji_name in self.emoji_roles_lookup:
+            return self.emoji_roles_lookup[emoji_name]['role_id']
+        elif emoji_custom_name in self.emoji_roles_lookup:
+            return self.emoji_roles_lookup[emoji_custom_name]['role_id']
+        elif animated_custom_emoji_name in self.emoji_roles_lookup:
+            return self.emoji_roles_lookup[animated_custom_emoji_name]['role_id']
+        else:
+            raise KeyError(f'No emoji reaction found for emoji_name = {emoji_name} emoji_id = {emoji_id}')
+
     def reload_react_roles(self):
         logger.info(f'Reloading react roles')
         self.emoji_roles_lookup = load_roles()
@@ -35,8 +51,12 @@ class JainyBot(commands.Bot):
 
     def _is_invalid_emoji_role_reaction(self, payload: discord.RawReactionActionEvent):
         self.guild = self.get_guild(payload.guild_id)
+        if not payload.emoji:
+            logger.error(f'No emoji reaction found')
+            return True
+
         try:
-            role_id = self.emoji_roles_lookup[payload.emoji]['role_id']
+            role_id = self._get_role_id_by_emoji(payload.emoji)
             logger.info(f'Found role Id = {role_id}')
         except KeyError:
             logger.error(f'Invalid Emoji: {payload.emoji}')
@@ -61,7 +81,7 @@ class JainyBot(commands.Bot):
             logger.error(f"Unrecognized reaction emoji: {payload.emoji}")
             return
         guild = self.get_guild(payload.guild_id)
-        role_id = guild.get_role(self.emoji_roles_lookup[payload.emoji]['role_id'])
+        role_id = guild.get_role(self._get_role_id_by_emoji(payload.emoji))
 
         logger.info(f'Received reaction add: {payload.emoji}')
         try:
@@ -75,7 +95,7 @@ class JainyBot(commands.Bot):
         if self._is_invalid_emoji_role_reaction(payload):
             return
 
-        role_id = self.emoji_roles_lookup[payload.emoji]['role_id']
+        role_id = self._get_role_id_by_emoji(payload.emoji)
         member = self.guild.get_member(payload.user_id)
 
         try:
