@@ -1,6 +1,3 @@
-import os
+from .util import get_config
 
-DALLE_API_URL = os.environ.get('DALLE_API_URL')
-
-if not DALLE_API_URL:
-    raise AttributeError('DALLE_API_URL environment variable not set!')
+DALLE_API_URL = get_config('JAINY_BOT_DALLE_API_URL')
