@@ -14,7 +14,6 @@ if typing.TYPE_CHECKING:
 
 roles_file = get_config('JAINY_BOT_ROLES_FILE')
 
-
 def load_roles() -> dict:
     logger.info(f'Loading roles from {roles_file}')
     with open(roles_file) as f:
@@ -46,6 +45,7 @@ class Role(commands.Cog, name="Role"):
         """
         try:
             self.bot.reload_react_roles()
+            await self.bot.create_react_role_msg(ctx)
         except Exception as e:
             logger.error(f'Failed to reload react roles: {e}')
             await ctx.send('Failed to reload react roles')
