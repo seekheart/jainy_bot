@@ -1,5 +1,17 @@
 # Jainy Bot Changelog
 
+## Version v1.2.2
+
+**Fixes**
+
+- Another fix attempt at docker image not publishing by entering full docker qualifier tag
+
+## Version v1.2.1
+
+**Devops**
+
+- Fix attempt at publishing docker hub image
+
 ## Version v1.2.0
 
 **Features**
