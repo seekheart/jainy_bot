@@ -1,0 +1,23 @@
+name: Documentation Request
+description: Request for updates to documentation here
+title: "[Documentation]: "
+labels: [ "documentation" ]
+assignees:
+  - seekheart
+body:
+  - type: dropdown
+    attributes:
+      label: What kind of documentation change is being requested?
+      options:
+        - technical
+        - missing info
+        - examples
+        - fix
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe the change
+      description: Provide information on what the impact of the change is
+    validations:
+      required: true

@@ -1,12 +1,14 @@
-import discord
-
 from datetime import datetime, timezone
-from loguru import logger
+
+import discord
 from discord.ext import commands
+from loguru import logger
+
 from config import BOT_MOD_AUDIT_CHANNEL_ID
 
 
-def make_general_card(title: str, author: discord.User, thumbnail_url: str | None = None) -> discord.Embed:
+def make_general_card(title: str, author: discord.User | discord.ClientUser,
+                      thumbnail_url: str | None = None) -> discord.Embed:
     """
     Makes a general discord embed card
     :param title: title of card
