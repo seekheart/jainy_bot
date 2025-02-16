@@ -1,5 +1,11 @@
 # Jainy Bot Changelog
 
+## Version v1.2.0
+
+- Refactored the role reaction to be configurable
+- Added role command to add/reload roles for assignment via assign
+- Added ability for bot to auto display assignable roles
+
 ## Version v1.1.1
 
 **Fixes**
